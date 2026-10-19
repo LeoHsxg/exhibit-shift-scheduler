@@ -23,6 +23,7 @@ export function EventView({
   const [tab, setTab] = useState<Tab>('overview');
   const [people, setPeople] = useState<Availability[] | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [withDraft, setWithDraft] = useState(true);
   const toast = useToast();
 
   useEffect(
@@ -56,8 +57,8 @@ export function EventView({
     if (!people) return;
     setExporting(true);
     try {
-      const { exportWorkbook } = await import('../lib/excel');
-      await exportWorkbook(event, people);
+      const [{ exportWorkbook }, { autoSchedule }] = await Promise.all([import('../lib/excel'), import('../lib/autoschedule')]);
+      await exportWorkbook(event, people, withDraft ? autoSchedule(event, people) : undefined);
     } catch (e) {
       console.error(e);
       toast('匯出失敗，請再試一次', 'danger');
@@ -88,6 +89,15 @@ export function EventView({
             <button className="btn" onClick={copyLink}>
               <Link2 /> 複製填寫連結
             </button>
+            <label className="open-toggle body-sm">
+              <input
+                type="checkbox"
+                className="checkbox"
+                checked={withDraft}
+                onChange={(e) => setWithDraft(e.target.checked)}
+              />
+              <span>含自動排班草稿</span>
+            </label>
             <button className="btn btn-primary" onClick={exportExcel} disabled={!people || exporting}>
               {exporting ? <span className="spinner" /> : <FileSpreadsheet />}
               匯出 Excel

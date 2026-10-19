@@ -5,6 +5,7 @@ import { dateLabel, hoursOf, levelOf, slotHours, slotKey, validKeys, type Availa
 //
 //   班表      和老師原本的格式一樣（列是時段、欄是日期）。點格子有下拉選單，只列出那格有空的人；
 //            也可以直接打字。還沒排的格子是黃色，沒人有空的格子先填「—」。最右邊一欄是每格的時數，可以改。
+//            有自動排班草稿（draft）時，格子先填好草稿的名字，下拉選單照樣可以換人。
 //   有空名單   每格有誰有空，顏色越深人越多。
 //   統計      每個人已排幾格、幾小時（公式），以及系統裡填的有空時數。
 
@@ -20,8 +21,8 @@ const SEQ = ['FFF3F3F7', 'FFB8B3CF', 'FF9991BD', 'FF796EA5', 'FF5A4F81', 'FF3934
 
 const slotLabel = (s: { start: string; end: string }) => `${s.start}~${s.end}`;
 
-export async function exportWorkbook(event: ShiftEvent, people: Availability[]) {
-  const buf = await buildWorkbook(event, people);
+export async function exportWorkbook(event: ShiftEvent, people: Availability[], draft?: Map<string, string>) {
+  const buf = await buildWorkbook(event, people, draft);
   const blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -32,7 +33,8 @@ export async function exportWorkbook(event: ShiftEvent, people: Availability[]) 
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
-export async function buildWorkbook(event: ShiftEvent, people: Availability[]) {
+/** draft：slotKey → 名字（見 autoschedule.ts），有的話班表格子先填好 */
+export async function buildWorkbook(event: ShiftEvent, people: Availability[], draft?: Map<string, string>) {
   const wb = new ExcelJS.Workbook();
   wb.creator = '展覽排班系統';
   wb.created = new Date();
@@ -75,6 +77,7 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[]) {
         cell.font = { ...FONT, color: { argb: 'FF8A8B8C' } };
         cell.fill = fill('FFF3F3F7');
       } else {
+        cell.value = draft?.get(slotKey(d, s)) ?? null;
         const list = `"${avail.join(',')}"`;
         cell.dataValidation = {
           type: 'list',
@@ -105,6 +108,7 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[]) {
 
   const noteRow = lastRow + 2;
   [
+    ...(draft ? ['・已填入的名字是系統自動排的草稿（盡量讓每個人的班連續、時數平均），可以直接修改。'] : []),
     '・點格子會出現下拉選單，只列出那一格有空的人；也可以直接打字。',
     '・黃色是還沒排的格子；「—」表示沒有人有空。',
     '・「每格時數」可以修改，「統計」工作表會跟著重新計算。',
