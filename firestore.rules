@@ -1,0 +1,46 @@
+rules_version = '2';
+
+// 資料結構
+//   admins/{email}                      管理者名單，只能從 Firebase Console 新增或刪除
+//   events/{eventId}                    一個檔期：標題、日期、時段、是否開放填寫
+//   events/{eventId}/availability/{名字} 一位助教有空的時段
+//
+// 助教不用登入：輸入名字就能讀寫自己名字底下的文件，但不能列出其他人、不能刪除，
+// 檔期截止後也不能再修改。管理者用 Google 登入，可以讀寫全部。
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/admins/$(request.auth.token.email));
+    }
+
+    match /admins/{email} {
+      // 登入後，網頁用這個確認自己是不是管理者
+      allow get: if request.auth != null && request.auth.token.email == email;
+      allow list: if isAdmin();
+      allow write: if false;
+    }
+
+    match /events/{eventId} {
+      // 拿到填寫連結的人才知道檔期 ID；只有管理者能列出所有檔期
+      allow get: if true;
+      allow list, write: if isAdmin();
+
+      match /availability/{name} {
+        allow get: if true;
+        allow list, delete: if isAdmin();
+        allow create, update: if isAdmin() || (
+          get(/databases/$(database)/documents/events/$(eventId)).data.isOpen == true
+          && name.size() <= 20
+          && request.resource.data.keys().hasOnly(['slots', 'updatedAt'])
+          && request.resource.data.slots is list
+          && request.resource.data.slots.size() <= 500
+          && request.resource.data.updatedAt == request.time
+        );
+      }
+    }
+  }
+}

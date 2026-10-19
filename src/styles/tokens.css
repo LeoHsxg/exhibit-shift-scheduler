@@ -1,0 +1,124 @@
+/* 設計 token：照 DESIGN.md（Neutral Tool UI）。元件只引用這裡的語意變數，明暗模式只在這一層切換 */
+
+:root {
+  --primary: #6e619c;
+  --primary-hover: #5d4f8b;
+  --primary-active: #4d4076;
+  --primary-text: #6e619c; /* 紫色文字；暗色模式換成較亮的紫 */
+  --on-primary: #ffffff;
+
+  --background: #ffffff;
+  --surface: #ffffff;
+  --surface-sunken: #f3f3f7;
+  --surface-hover: #f3f3f7;
+  --surface-active: #dcdbe6;
+  --border: #2d26501f;
+  --overlay: rgb(255 255 255 / 90%);
+
+  --text-primary: #303031;
+  --text-secondary: #4d4d4e;
+  --text-tertiary: #6c6c6d;
+  --text-muted: #8a8b8c;
+
+  --success: #5cc184;
+  --success-text: #16884f;
+  --warning: #e7c869;
+  --warning-text: #8d7102;
+  --danger: #e17e6d;
+  --danger-text: #b85a4a;
+  --danger-hover: #a44839;
+  --info: #67b5e1;
+  --info-text: #2c7da7;
+
+  /* 數量色階：熱度圖 */
+  --seq-1: #b8b3cf;
+  --seq-2: #9991bd;
+  --seq-3: #796ea5;
+  --seq-4: #5a4f81;
+  --seq-5: #39344d;
+  --seq-light-text: var(--text-primary); /* seq-1、seq-2 上的字 */
+  --seq-dark-text: #ffffff; /* seq-3 以上的字 */
+
+  --shadow-1: 0 0 12px rgb(0 0 0 / 6%);
+  --shadow-2: 0 4px 12px rgb(0 0 0 / 10%);
+  --shadow-3: 0 8px 16px rgb(0 0 0 / 12%);
+
+  --font-sans: Inter, 'Noto Sans TC', system-ui, sans-serif;
+  --font-feature-heading: 'cv05', 'cv06', 'cv12', 'cv13', 'ss07';
+
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 8px;
+  --r-full: 9999px;
+
+  --header-height: 60px;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --primary-hover: #796da8;
+  --primary-active: #8a7fb8;
+  --primary-text: #9a8fc8;
+  --background: #141317;
+  --surface: #141317;
+  --surface-sunken: #0b0b0e;
+  --surface-hover: #242329;
+  --surface-active: #35343b;
+  --border: #ffffff1a;
+  --overlay: rgb(20 19 23 / 90%);
+  --text-primary: #f1f3f5;
+  --text-secondary: #d1d1d2;
+  --text-tertiary: #a4a4a6;
+  --text-muted: #717173;
+  --success-text: var(--success);
+  --warning-text: var(--warning);
+  --danger-text: var(--danger);
+  --info-text: var(--info);
+  --seq-1: #4e4866;
+  --seq-2: #6a618e;
+  --seq-3: #887cb5;
+  --seq-4: #a9a1ce;
+  --seq-5: #cecbe0;
+  --seq-light-text: #f1f3f5;
+  --seq-dark-text: #1f1f20;
+  --shadow-1: 0 0 0 1px rgb(255 255 255 / 8%), 0 8px 16px rgb(0 0 0 / 50%);
+  --shadow-2: 0 0 0 1px rgb(255 255 255 / 8%), 0 12px 24px rgb(0 0 0 / 50%);
+  --shadow-3: 0 0 0 1px rgb(255 255 255 / 8%), 0 12px 24px rgb(0 0 0 / 50%);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --primary-hover: #796da8;
+    --primary-active: #8a7fb8;
+    --primary-text: #9a8fc8;
+    --background: #141317;
+    --surface: #141317;
+    --surface-sunken: #0b0b0e;
+    --surface-hover: #242329;
+    --surface-active: #35343b;
+    --border: #ffffff1a;
+    --overlay: rgb(20 19 23 / 90%);
+    --text-primary: #f1f3f5;
+    --text-secondary: #d1d1d2;
+    --text-tertiary: #a4a4a6;
+    --text-muted: #717173;
+    --success-text: var(--success);
+    --warning-text: var(--warning);
+    --danger-text: var(--danger);
+    --info-text: var(--info);
+    --seq-1: #4e4866;
+    --seq-2: #6a618e;
+    --seq-3: #887cb5;
+    --seq-4: #a9a1ce;
+    --seq-5: #cecbe0;
+    --seq-light-text: #f1f3f5;
+    --seq-dark-text: #1f1f20;
+    --shadow-1: 0 0 0 1px rgb(255 255 255 / 8%), 0 8px 16px rgb(0 0 0 / 50%);
+    --shadow-2: 0 0 0 1px rgb(255 255 255 / 8%), 0 12px 24px rgb(0 0 0 / 50%);
+    --shadow-3: 0 0 0 1px rgb(255 255 255 / 8%), 0 12px 24px rgb(0 0 0 / 50%);
+    color-scheme: dark;
+  }
+}

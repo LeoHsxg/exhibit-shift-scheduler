@@ -1,0 +1,29 @@
+{
+  "name": "exhibit-shift-scheduler",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "emulators": "firebase emulators:start --only auth,firestore --project demo-exhibit",
+    "seed": "node scripts/seed-dev.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && firebase deploy --only hosting,firestore"
+  },
+  "dependencies": {
+    "exceljs": "4.4.0",
+    "firebase": "12.19.0",
+    "lucide-react": "1.59.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "4.7.0",
+    "firebase-tools": "15.34.0",
+    "typescript": "5.9.3",
+    "vite": "6.4.4"
+  }
+}
