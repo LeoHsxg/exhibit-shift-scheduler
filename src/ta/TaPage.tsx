@@ -302,7 +302,7 @@ function FillStep({
       ) : (
         <div className="notice" data-tone="info">
           <Info />
-          <span>點擊格子即可切換有空／沒空，長按格子並拖曳可切換整塊時段。自動儲存。</span>
+          <span>點擊格子即可切換有空／沒空，長按並拖曳可選整塊時段，點日期則可以整列切換。自動儲存。</span>
         </div>
       )}
 
