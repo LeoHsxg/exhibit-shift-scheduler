@@ -75,40 +75,52 @@
 
 /* ── 格子 ── */
 
-.avail-grid {
-  --date-col: 64px;
-  --cell-h: 44px;
+.avail {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.avail-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.avail-nav-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.avail-nav-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-tertiary);
+}
+
+/* 一欄時間＋五到七欄星期；欄數和列高都由元件設定（列高依時段長度） */
+.avail-grid {
+  --time-col: 48px;
+  --hour-h: 52px;
+  --min-row-h: 34px;
+  display: grid;
+  gap: 3px;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
 @media (min-width: 521px) {
   .avail-grid {
-    --date-col: 84px;
-    --cell-h: 40px;
+    --time-col: 64px;
+    --hour-h: 48px;
+    gap: 4px;
   }
 }
-
-.avail-head,
 .avail-row {
-  display: grid;
-  gap: 4px;
-}
-.avail-head {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  padding: 8px 0 6px;
-  background: var(--background);
-  border-bottom: 1px solid var(--border);
-}
-.avail-week {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: contents;
 }
 
 .avail-slot-label,
@@ -127,35 +139,51 @@
 .avail-slot-label {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 2px 0;
-  font-size: 12px;
-  line-height: 1.4;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 0 6px 0 0;
+  font-size: 11px;
+  line-height: 1.3;
 }
 .avail-date-label {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 0 4px;
-  font-size: 14px;
+  padding: 4px 0 6px;
+  font-size: 12px;
   font-weight: 500;
-  text-align: left;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+.avail-date-label[data-closed] {
+  justify-content: flex-end;
+  cursor: default;
 }
 .avail-weekday {
   font-size: 12px;
   font-weight: 400;
   color: var(--text-tertiary);
 }
+.avail-date-label[data-closed] .avail-weekday {
+  color: var(--text-muted);
+}
+@media (min-width: 521px) {
+  .avail-slot-label {
+    font-size: 12px;
+  }
+  .avail-date-label {
+    font-size: 14px;
+  }
+}
 @media (hover: hover) {
   .avail-slot-label:not(:disabled):hover,
-  .avail-date-label:not(:disabled):hover {
+  .avail-date-label:not(:disabled):not([data-closed]):hover {
     background: var(--surface-hover);
     color: var(--text-primary);
   }
 }
 
 .avail-cell {
-  height: var(--cell-h);
   display: grid;
   place-items: center;
   border: 1px solid var(--border);
@@ -172,6 +200,11 @@
   width: 16px;
   height: 16px;
   pointer-events: none;
+}
+.avail-cell[data-closed] {
+  background: transparent;
+  border-style: dashed;
+  cursor: default;
 }
 .avail-cell[data-on] {
   background: var(--primary);

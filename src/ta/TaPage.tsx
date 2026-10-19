@@ -284,7 +284,6 @@ function FillStep({
   const valid = validKeys(event);
   const count = [...selected].filter((k) => valid.has(k)).length;
   const hours = hoursOf(event, selected);
-  const isTouch = typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 
   return (
     <div className="fill-step">
@@ -303,12 +302,7 @@ function FillStep({
       ) : (
         <div className="notice" data-tone="info">
           <Info />
-          <span>
-            {isTouch
-              ? '點一下格子切換有空／沒空。按住格子不放，等震動一下再拖曳，可以一次選一整塊。點日期或時間可以整列切換。'
-              : '點一下格子切換有空／沒空，按住拖曳可以一次選一整塊。點日期或時間可以整列切換。'}
-            會自動儲存。
-          </span>
+          <span>點擊格子即可切換有空／沒空，長按格子並拖曳可切換整塊時段。自動儲存。</span>
         </div>
       )}
 
