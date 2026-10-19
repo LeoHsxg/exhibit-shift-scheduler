@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "demo-exhibit"
-  }
+    "default": "exhibit-shift-scheduler",
+    "scheduler": "exhibit-shift-scheduler"
+  },
+  "targets": {},
+  "etags": {}
 }
