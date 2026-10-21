@@ -3,10 +3,8 @@ import { Plus, X } from 'lucide-react';
 import {
   DEFAULT_SLOTS,
   datesBetween,
-  formatHours,
   groupByWeek,
   shortDate,
-  slotHours,
   weekdayLabel,
   weekdayOf,
   type Slot,
@@ -180,7 +178,6 @@ export function SlotEditor({ value, onChange }: { value: Slot[]; onChange: (v: S
             aria-label={`第 ${i + 1} 個時段結束`}
             onChange={(e) => set(i, { end: e.target.value })}
           />
-          <span className="slot-hours body-sm muted num">{s.end > s.start ? `${formatHours(slotHours(s))} 小時` : ''}</span>
           <button
             type="button"
             className="btn btn-icon btn-ghost"

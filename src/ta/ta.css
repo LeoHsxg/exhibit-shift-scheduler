@@ -101,11 +101,10 @@
   color: var(--text-tertiary);
 }
 
-/* 一欄時間＋五到七欄星期；欄數和列高都由元件設定（列高依時段長度） */
+/* 一欄時間＋五到七欄星期；欄數和列數由元件設定，每個時段算 1 小時，列高都是 --hour-h */
 .avail-grid {
   --time-col: 48px;
   --hour-h: 52px;
-  --min-row-h: 34px;
   display: grid;
   gap: 3px;
   user-select: none;

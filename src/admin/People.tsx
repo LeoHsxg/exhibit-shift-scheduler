@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { CircleAlert, Link2, Pencil, Trash2, Users } from 'lucide-react';
 import { deletePerson, renamePerson } from '../lib/api';
-import { formatHours, hoursOf, normalizeName, validKeys, type Availability, type ShiftEvent } from '../lib/schedule';
+import { hoursOf, normalizeName, type Availability, type ShiftEvent } from '../lib/schedule';
 import { Dialog, useToast } from '../ui/common';
 
 // 助教自由輸入名字，難免有人打錯字或重複填。這裡可以改名（同名會合併）或刪除。
@@ -31,7 +31,6 @@ export function People({
       </div>
     );
 
-  const valid = validKeys(event);
 
   return (
     <div className="people">
@@ -39,7 +38,6 @@ export function People({
         <thead>
           <tr>
             <th>名字</th>
-            <th className="num-col">有空格數</th>
             <th className="num-col">有空時數</th>
             <th>最後更新</th>
             <th aria-label="動作" />
@@ -49,8 +47,7 @@ export function People({
           {people.map((p) => (
             <tr key={p.name}>
               <td className="person-name">{p.name}</td>
-              <td className="num-col num">{p.slots.filter((k) => valid.has(k)).length}</td>
-              <td className="num-col num">{formatHours(hoursOf(event, p.slots))}</td>
+              <td className="num-col num">{hoursOf(event, p.slots)}</td>
               <td className="num muted">
                 {p.updatedAt
                   ? p.updatedAt.toDate().toLocaleString('zh-TW', {

@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react';
 import { Link2, Users, X } from 'lucide-react';
 import {
   dateLabel,
-  formatHours,
   hoursOf,
   levelOf,
   shortDate,
@@ -180,7 +179,7 @@ export function Overview({
                       onClick={() => setFocus(focus === p.name ? null : p.name)}
                     >
                       <span>{p.name}</span>
-                      <span className="body-sm muted num">{formatHours(hoursOf(event, p.slots))} 小時</span>
+                      <span className="body-sm muted num">{hoursOf(event, p.slots)} 小時</span>
                     </button>
                   </li>
                 ))}

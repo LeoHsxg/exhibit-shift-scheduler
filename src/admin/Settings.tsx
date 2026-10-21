@@ -72,7 +72,7 @@ export function Settings({
 
       <section className="settings-section">
         <h2 className="title-lg">時段</h2>
-        <p className="body-sm muted">時數會用在 Excel 的統計裡，例如 12:00–13:10 算 1.17 小時。</p>
+        <p className="body-sm muted">每個時段一律算 1 小時（例如 12:00–13:10 也是 1 小時），助教頁、總覽、Excel 統計和自動排班都用同一個標準。</p>
         <SlotEditor value={slots} onChange={setSlots} />
         {submitted && slotError && <ErrorText>{slotError}</ErrorText>}
       </section>

@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
+  HOURS_PER_SLOT,
   groupByWeek,
   parseDate,
   shortDate,
-  slotHours,
   slotKey,
   toIso,
   weekdayLabel,
@@ -14,7 +14,7 @@ import {
 
 // 週檢視，和日曆一樣：每一欄是一天，每一列是一個時段，一次顯示一週，用上下週按鈕切換。
 // 週一到週五一定顯示；週六、週日只有檔期裡有排到那天才會多一欄。
-// 列高依時段長短等比例；不在檔期內的日子（例如某週休館）畫成虛線空格，不能選。
+// 每個時段都算 1 小時，列高一樣；不在檔期內的日子（例如某週休館）畫成虛線空格，不能選。
 //
 // 操作方式
 //   滑鼠：點一下切換；按住拖曳選一個矩形範圍
@@ -226,14 +226,12 @@ export function AvailabilityGrid({
   };
 
   const openDays = days.filter((d): d is string => d !== null);
-  const weekCount = openDays.reduce((n, d) => n + slots.filter((s) => selected.has(slotKey(d, s))).length, 0);
+  const weekHours = openDays.reduce((n, d) => n + slots.filter((s) => selected.has(slotKey(d, s))).length, 0) * HOURS_PER_SLOT;
 
-  // 列高依時段長度：一小時是 --hour-h，太短的時段至少留 --min-row-h 才好點
+  // 每個時段都算 1 小時，列高一樣
   const layout = {
     gridTemplateColumns: `var(--time-col) repeat(${days.length}, minmax(0, 1fr))`,
-    gridTemplateRows: `auto ${slots
-      .map((s) => `max(var(--min-row-h), calc(var(--hour-h) * ${slotHours(s).toFixed(3)}))`)
-      .join(' ')}`,
+    gridTemplateRows: `auto repeat(${slots.length}, var(--hour-h))`,
   };
 
   return (
@@ -252,7 +250,7 @@ export function AvailabilityGrid({
           <div className="avail-nav-label" aria-live="polite">
             <span className="num">{weekRangeLabel(week)}</span>
             <span className="avail-nav-sub">
-              第 {wi + 1} / {weeks.length} 週{readOnly ? '' : ` · 這週已選 ${weekCount} 格`}
+              第 {wi + 1} / {weeks.length} 週{readOnly ? '' : ` · 這週已選 ${weekHours} 小時`}
             </span>
           </div>
           <button

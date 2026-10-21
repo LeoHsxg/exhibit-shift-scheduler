@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { CalendarX2, CircleAlert, CircleCheck, Info, Lock, RotateCcw } from 'lucide-react';
 import { fetchAvailability, fetchEvent, saveAvailability } from '../lib/api';
-import { dateRangeLabel, formatHours, hoursOf, normalizeName, validKeys, type ShiftEvent } from '../lib/schedule';
+import { dateRangeLabel, hoursOf, normalizeName, type ShiftEvent } from '../lib/schedule';
 import { Emblem, FullPageSpinner, ThemeToggle, formatTime, useToast } from '../ui/common';
 import { AvailabilityGrid } from './AvailabilityGrid';
 import './ta.css';
@@ -281,8 +281,6 @@ function FillStep({
     };
   }, [flush]);
 
-  const valid = validKeys(event);
-  const count = [...selected].filter((k) => valid.has(k)).length;
   const hours = hoursOf(event, selected);
 
   return (
@@ -311,7 +309,7 @@ function FillStep({
       <div className="action-bar">
         <div className="action-bar-inner">
           <p className="body-sm">
-            已選 <strong className="num">{count}</strong> 格 · 共 <strong className="num">{formatHours(hours)}</strong> 小時
+            已選 <strong className="num">{hours}</strong> 小時（每個時段算 1 小時）
           </p>
           <SaveIndicator state={save} onRetry={flush} />
         </div>

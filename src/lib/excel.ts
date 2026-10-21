@@ -1,13 +1,13 @@
 import ExcelJS from 'exceljs';
-import { dateLabel, hoursOf, levelOf, slotHours, slotKey, validKeys, type Availability, type ShiftEvent } from './schedule';
+import { HOURS_PER_SLOT, dateLabel, hoursOf, levelOf, slotKey, validKeys, type Availability, type ShiftEvent } from './schedule';
 
 // 匯出給老師用的 Excel。之後臨時換班、請假都直接在 Excel 上改，所以統計用公式算，改了會自動更新。
 //
 //   班表      和老師原本的格式一樣（列是時段、欄是日期）。點格子有下拉選單，只列出那格有空的人；
-//            也可以直接打字。還沒排的格子是黃色，沒人有空的格子先填「—」。最右邊一欄是每格的時數，可以改。
+//            也可以直接打字。還沒排的格子是黃色，沒人有空的格子先填「—」。
 //            有自動排班草稿（draft）時，格子先填好草稿的名字，下拉選單照樣可以換人。
 //   有空名單   每格有誰有空，顏色越深人越多。
-//   統計      每個人已排幾格、幾小時（公式），以及系統裡填的有空時數。
+//   統計      每個人已排幾小時（公式），以及系統裡填的有空時數。每個時段一律算 1 小時，不看實際分鐘數。
 
 const FONT = { name: 'Microsoft JhengHei', size: 12 };
 const NONE = '—';
@@ -49,7 +49,6 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
   const lastRow = firstRow + slots.length - 1;
   const firstCol = 2;
   const lastCol = firstCol + dates.length - 1;
-  const hoursCol = lastCol + 1;
   const colLetter = (c: number) => columnLetter(c);
   const gridRange = `$${colLetter(firstCol)}$${firstRow}:$${colLetter(lastCol)}$${lastRow}`;
 
@@ -57,12 +56,10 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
   const ws = wb.addWorksheet('班表', { views: [{ state: 'frozen', xSplit: 1, ySplit: 1 }] });
   ws.getColumn(1).width = 15;
   for (let c = firstCol; c <= lastCol; c++) ws.getColumn(c).width = 12;
-  ws.getColumn(hoursCol).width = 10;
 
   const head = ws.getRow(1);
   head.getCell(1).value = '時段';
   dates.forEach((d, i) => (head.getCell(firstCol + i).value = dateLabel(d)));
-  head.getCell(hoursCol).value = '每格時數';
   head.height = 22;
 
   slots.forEach((s, si) => {
@@ -88,12 +85,9 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
         };
       }
     });
-    const h = row.getCell(hoursCol);
-    h.value = Math.round(slotHours(s) * 100) / 100;
-    h.font = { ...FONT, color: { argb: 'FF6C6C6D' } };
   });
 
-  styleGrid(ws, 1, lastRow, 1, hoursCol);
+  styleGrid(ws, 1, lastRow, 1, lastCol);
   ws.addConditionalFormatting({
     ref: gridRange.replace(/\$/g, ''),
     rules: [
@@ -111,7 +105,7 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
     ...(draft ? ['・已填入的名字是系統自動排的草稿（盡量讓每個人的班連續、時數平均），可以直接修改。'] : []),
     '・點格子會出現下拉選單，只列出那一格有空的人；也可以直接打字。',
     '・黃色是還沒排的格子；「—」表示沒有人有空。',
-    '・「每格時數」可以修改，「統計」工作表會跟著重新計算。',
+    `・每個時段一律算 ${HOURS_PER_SLOT} 小時（不看實際分鐘數），「統計」工作表會跟著班表重新計算。`,
   ].forEach((t, i) => {
     const c = ws.getCell(noteRow + i, 1);
     c.value = t;
@@ -152,14 +146,10 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
   const st = wb.addWorksheet('統計', { views: [{ state: 'frozen', ySplit: 1 }] });
   st.columns = [
     { header: '姓名', width: 16 },
-    { header: '已排格數', width: 12 },
     { header: '已排時數', width: 12 },
-    { header: '有空格數', width: 12 },
     { header: '有空時數', width: 12 },
   ];
   const extraRows = 5; // 預留空白列，老師之後加人也有公式可用
-  const hoursCell = (r: number) => `'班表'!$${colLetter(hoursCol)}$${r}`;
-  const rowRange = (r: number) => `'班表'!$${colLetter(firstCol)}$${r}:$${colLetter(lastCol)}$${r}`;
   for (let i = 0; i < names.length + extraRows; i++) {
     const r = 2 + i;
     const row = st.getRow(r);
@@ -167,23 +157,18 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
     const p = people.find((x) => x.name === name);
     const match = `"*"&$A${r}&"*"`;
     row.getCell(1).value = name ?? null;
-    row.getCell(2).value = { formula: `IF($A${r}="","",COUNTIF('班表'!${gridRange},${match}))` };
-    const perRow = slots.map((_, si) => `COUNTIF(${rowRange(firstRow + si)},${match})*${hoursCell(firstRow + si)}`).join('+');
-    row.getCell(3).value = { formula: `IF($A${r}="","",${perRow})` };
-    if (p) {
-      row.getCell(4).value = p.slots.filter((k) => valid.has(k)).length;
-      row.getCell(5).value = Math.round(hoursOf(event, p.slots) * 100) / 100;
-    }
+    row.getCell(2).value = { formula: `IF($A${r}="","",COUNTIF('班表'!${gridRange},${match})*${HOURS_PER_SLOT})` };
+    if (p) row.getCell(3).value = hoursOf(event, p.slots);
   }
   const lastStatRow = 1 + names.length + extraRows;
-  styleGrid(st, 1, lastStatRow, 1, 5);
+  styleGrid(st, 1, lastStatRow, 1, 3);
 
   const sumStart = lastStatRow + 2;
   const summary: [string, string][] = [
-    ['總格數', `${slots.length * dates.length}`],
-    ['已排格數', `COUNTA('班表'!${gridRange})-COUNTIF('班表'!${gridRange},"${NONE}")`],
-    ['還沒排（黃色）', `COUNTBLANK('班表'!${gridRange})`],
-    ['沒人有空（—）', `COUNTIF('班表'!${gridRange},"${NONE}")`],
+    ['總時數', `${slots.length * dates.length * HOURS_PER_SLOT}`],
+    ['已排時數', `(COUNTA('班表'!${gridRange})-COUNTIF('班表'!${gridRange},"${NONE}"))*${HOURS_PER_SLOT}`],
+    ['還沒排（黃色）', `COUNTBLANK('班表'!${gridRange})*${HOURS_PER_SLOT}`],
+    ['沒人有空（—）', `COUNTIF('班表'!${gridRange},"${NONE}")*${HOURS_PER_SLOT}`],
   ];
   summary.forEach(([label, formula], i) => {
     const row = st.getRow(sumStart + i);
@@ -192,7 +177,7 @@ export async function buildWorkbook(event: ShiftEvent, people: Availability[], d
   });
   styleGrid(st, sumStart, sumStart + summary.length - 1, 1, 2, false);
   const note = st.getCell(sumStart + summary.length + 1, 1);
-  note.value = '「已排」由班表即時計算；「有空」是助教在系統裡填的資料。格子裡寫兩個名字（例如「王小明、李小華」）也會分別計算。';
+  note.value = `每個時段一律算 ${HOURS_PER_SLOT} 小時。「已排」由班表即時計算；「有空」是助教在系統裡填的資料。格子裡寫兩個名字（例如「王小明、李小華」）每人各算 ${HOURS_PER_SLOT} 小時。`;
   note.font = { ...FONT, size: 11, color: { argb: 'FF6C6C6D' } };
 
   return wb.xlsx.writeBuffer();

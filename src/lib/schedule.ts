@@ -95,15 +95,6 @@ const toMinutes = (t: string) => {
   return h * 60 + m;
 };
 
-/** 時段長度（小時），例如 12:00–13:10 是 1.17 */
-export function slotHours(slot: Slot): number {
-  return Math.max(0, toMinutes(slot.end) - toMinutes(slot.start)) / 60;
-}
-
-export function formatHours(h: number): string {
-  return String(Math.round(h * 100) / 100);
-}
-
 export function sortSlots(slots: Slot[]): Slot[] {
   return [...slots].sort((a, b) => toMinutes(a.start) - toMinutes(b.start));
 }
@@ -115,12 +106,15 @@ export function validKeys(event: ShiftEvent): Set<string> {
   return keys;
 }
 
+/** 每個時段一律算 1 小時，不看實際分鐘數（12:00–13:10 也是 1 小時） */
+export const HOURS_PER_SLOT = 1;
+
+/** 時數＝還在檔期內的格數 × HOURS_PER_SLOT */
 export function hoursOf(event: ShiftEvent, keys: Iterable<string>): number {
-  const byStart = new Map(event.slots.map((s) => [s.start, slotHours(s)]));
   const valid = validKeys(event);
-  let total = 0;
-  for (const k of keys) if (valid.has(k)) total += byStart.get(k.split('_')[1]) ?? 0;
-  return total;
+  let count = 0;
+  for (const k of new Set(keys)) if (valid.has(k)) count++;
+  return count * HOURS_PER_SLOT;
 }
 
 /**

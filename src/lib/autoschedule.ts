@@ -1,11 +1,11 @@
-import { slotHours, slotKey, validKeys, type Availability, type ShiftEvent } from './schedule';
+import { HOURS_PER_SLOT, slotKey, validKeys, type Availability, type ShiftEvent } from './schedule';
 
 // 自動排班草稿：每格排 1 個有空的人，結果給老師在 Excel 上再調整。
 //
 // 優先順序：
 //   1. 能填的格子全部填滿（只要有人有空就一定排人，這條不拿去跟其他條件交換）
 //   2. 同一個人同一天的班盡量連續
-//   3. 依實際時數平均分配
+//   3. 依時數平均分配（每個時段一律算 1 小時，不看實際分鐘數）
 //
 // 做法：先用 greedy 排出一版（有空人數少的格子先排），再反覆嘗試「把某格或某一段換給別人」，
 // 只要整體成本變低就換，直到換不動為止。成本是每個人各自算再加總：
@@ -29,7 +29,6 @@ export interface AutoScheduleOptions {
 export function autoSchedule(event: ShiftEvent, people: Availability[], options: AutoScheduleOptions = {}): Map<string, string> {
   const { dates, slots } = event;
   const S = slots.length;
-  const hoursOfSlot = slots.map(slotHours);
   const valid = validKeys(event);
   const names = people.map((p) => p.name);
   const P = names.length;
@@ -75,9 +74,9 @@ export function autoSchedule(event: ShiftEvent, people: Availability[], options:
     const before = affected.reduce((sum, pi) => sum + dayCost(pi, d) + hourCost(hours[pi]), 0);
     const prev = cells.map((c) => owner[c]);
     const move = (c: number, pi: number) => {
-      if (owner[c] >= 0) hours[owner[c]] -= hoursOfSlot[c % S];
+      if (owner[c] >= 0) hours[owner[c]] -= HOURS_PER_SLOT;
       owner[c] = pi;
-      if (pi >= 0) hours[pi] += hoursOfSlot[c % S];
+      if (pi >= 0) hours[pi] += HOURS_PER_SLOT;
     };
     cells.forEach((c) => move(c, to));
     const after = affected.reduce((sum, pi) => sum + dayCost(pi, d) + hourCost(hours[pi]), 0);
